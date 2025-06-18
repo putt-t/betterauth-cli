@@ -4,7 +4,7 @@ A command-line interface tool that automatically generates and configures [BETTE
 
 ## Disclaimer
 
-I just started re-learning Rust so this is all very new to me, this is a learning project. Feel free to bash my code and give me feedback on how to optimize / improve.
+I just started re-learning Rust so this is all relatively new to me. Feel free to bash my code and give me feedback on how to optimize / improve.
 
 ## 🚀 Features
 
