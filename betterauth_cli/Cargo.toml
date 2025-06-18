@@ -1,0 +1,10 @@
+[package]
+name = "betterauth_cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+base64 = "0.22.1"
+inquire = "0.7.5"
+rand = { version = "0.9.1", features = ["std"] }
+
