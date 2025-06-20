@@ -1,4 +1,4 @@
-use inquire::{Select};
+use inquire::Select;
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -41,39 +41,52 @@ pub fn setup_nextjs_project(project_name: String, better_auth_secret: String) {
     .prompt()
     .unwrap();
 
+    let auth_ts_content = fs::read_to_string("../../templates/nextjs/auth.ts.template")
+        .expect("Failed to read auth.ts template file");
+
     // match the user's choice
     match create_better_auth_instance {
         "Project root" => {
-            fs::write(
-                "auth.ts",
-                "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n\t//...\n});",
-            )
-            .unwrap();
+            fs::write("auth.ts", &auth_ts_content).unwrap();
         }
         "lib/" => {
             // first check if src exists
-            if Path::new("src").exists() {
-                // make a new directory called lib
-                std::fs::create_dir("src/lib").unwrap();
-                std::fs::write("src/lib/auth.ts", "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n\t//...\n});").unwrap();
+            let target_dir = if Path::new("src").exists() {
+                "src/lib"
             } else {
-                // make a new directory called lib
-                fs::create_dir("lib").unwrap();
-                fs::write("lib/auth.ts", "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n\t//...\n});").unwrap();
-            }
+                "lib"
+            };
+            fs::create_dir_all(target_dir).unwrap();
+            fs::write(format!("{}/auth.ts", target_dir), &auth_ts_content).unwrap();
         }
         "utils/" => {
-            // first check if src exists
-            if Path::new("src").exists() {
-                // make a new directory called utils
-                fs::create_dir("src/utils").unwrap();
-                fs::write("src/utils/auth.ts", "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n\t//...\n});").unwrap();
+            // first check if
+            let target_dir = if Path::new("src").exists() {
+                "src/utils"
             } else {
-                // make a new directory called utils
-                fs::create_dir("utils").unwrap();
-                fs::write("utils/auth.ts", "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n\t//...\n});").unwrap();
-            }
+                "utils"
+            };
+            fs::create_dir_all(target_dir).unwrap();
+            fs::write(format!("{}/auth.ts", target_dir), &auth_ts_content).unwrap();
         }
         _ => println!("Invalid choice"),
     };
+    // ask user if they want to continue on with database setup
+    let continue_with_database_setup = Select::new(
+        "Do you want to continue on with database setup?",
+        vec!["Yes", "No"],
+    )
+    .prompt()
+    .unwrap();
+
+    // match the user's choice
+    match continue_with_database_setup {
+        "Yes" => {
+            println!("Continuing on with database setup...");
+        }
+        "No" => {
+            println!("Skipping database setup...");
+        }
+        _ => println!("Invalid choice"),
+    }
 }
