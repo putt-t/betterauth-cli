@@ -11,11 +11,18 @@ pub fn generate_auth_ts_content(
 ) -> String {
     let mut imports = String::from("import { betterAuth } from \"better-auth\";\n");
     let mut config_parts = Vec::new();
+    let mut pre_config = String::new();
 
     // add database import if needed
     if let Some(import_str) = &database_config.imports {
         imports.push_str(import_str);
         imports.push('\n');
+    }
+
+    // add pre-config if needed (for MS SQL dialect)
+    if let Some(pre_config_str) = &database_config.pre_config {
+        pre_config.push_str(pre_config_str);
+        pre_config.push('\n');
     }
 
     // add configurations
@@ -39,8 +46,8 @@ pub fn generate_auth_ts_content(
 
     // format the auth.ts file
     format!(
-        "{}\nexport const auth = betterAuth({{\n{}\n}});",
-        imports, config
+        "{}\n{}\nexport const auth = betterAuth({{\n{}\n}});",
+        imports, pre_config, config
     )
 }
 
