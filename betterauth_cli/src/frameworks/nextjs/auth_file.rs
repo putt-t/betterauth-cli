@@ -51,56 +51,90 @@ pub fn generate_auth_ts_content(
     )
 }
 
-pub fn write_auth_file(auth_ts_content: &str, location_choice: &str) {
-    match location_choice {
-        // if the user wants to put it in the project root
+fn write_project_file(
+    location_choice: &str,
+    file_name: &str,
+    content: &str,
+) -> std::io::Result<()> {
+    let src_exists = Path::new("src").exists();
+
+    let (target_dir, file_path) = match location_choice {
         "Project root" => {
-            // create the file if it doesn't exist
-            fs::write("auth.ts", auth_ts_content).unwrap();
-            println!(
-                "{} {}",
-                style("✓").bold().green(),
-                style("Created auth.ts in project root").green()
-            );
+            let dir = if src_exists { "src" } else { "" };
+            let path = if src_exists {
+                format!("src/{}", file_name)
+            } else {
+                file_name.to_string()
+            };
+            (dir, path)
         }
-        // if the user wants to put it in the lib folder
         "lib/" => {
-            // check if src exists and determine the app path
-            let target_dir = if Path::new("src").exists() {
-                "src/app/lib"
-            } else {
-                "app/lib"
-            };
-            // create the directory if it doesn't exist
-            fs::create_dir_all(target_dir).unwrap();
-            fs::write(format!("{}/auth.ts", target_dir), auth_ts_content).unwrap();
-            println!(
-                "{} {}",
-                style("✓").bold().green(),
-                style(format!("Created auth.ts in {}", target_dir)).green()
-            );
+            let dir = if src_exists { "src/lib" } else { "lib" };
+            (dir, format!("{}/{}", dir, file_name))
         }
-        // if the user wants to put it in the utils folder
         "utils/" => {
-            // check if src exists and determine the app path
-            let target_dir = if Path::new("src").exists() {
-                "src/app/utils"
-            } else {
-                "app/utils"
-            };
-            // create the directory if it doesn't exist
-            fs::create_dir_all(target_dir).unwrap();
-            fs::write(format!("{}/auth.ts", target_dir), auth_ts_content).unwrap();
-            println!(
-                "{} {}",
-                style("✓").bold().green(),
-                style(format!("Created auth.ts in {}", target_dir)).green()
-            );
+            let dir = if src_exists { "src/utils" } else { "utils" };
+            (dir, format!("{}/{}", dir, file_name))
         }
-        _ => println!(
-            "{} {}",
-            style("!").bold().yellow(),
-            style("Invalid choice for auth.ts location").yellow()
-        ),
+        _ => ("", file_name.to_string()),
+    };
+
+    if !target_dir.is_empty() {
+        fs::create_dir_all(target_dir)?;
     }
+    fs::write(&file_path, content)?;
+
+    println!(
+        "{} {}",
+        style("✓").bold().green(),
+        style(format!("Created {}", file_path)).green()
+    );
+
+    Ok(())
+}
+
+pub fn write_auth_file(auth_ts_content: &str, location_choice: &str) -> std::io::Result<()> {
+    write_project_file(location_choice, "auth.ts", auth_ts_content)
+}
+
+pub fn create_api_route(location_choice: &str) -> std::io::Result<()> {
+    let src_exists = Path::new("src").exists();
+
+    let auth_import_path = match location_choice {
+        "Project root" => "@/auth",
+        "lib/" => "@/lib/auth",
+        "utils/" => "@/utils/auth",
+        _ => "@/auth",
+    };
+
+    let route_content = format!(
+        "import {{ auth }} from \"{}\";\nimport {{ toNextJsHandler }} from \"better-auth/next-js\";\n\nexport const {{ GET, POST }} = toNextJsHandler(auth.handler);",
+        auth_import_path
+    );
+
+    let route_dir = if src_exists {
+        "src/app/api/auth/[...all]"
+    } else {
+        "app/api/auth/[...all]"
+    };
+
+    fs::create_dir_all(route_dir)?;
+    fs::write(format!("{}/route.ts", route_dir), &route_content)?;
+
+    println!(
+        "{} {}",
+        style("✓").bold().green(),
+        style(format!("Created API route in {}", route_dir)).green()
+    );
+
+    Ok(())
+}
+
+pub fn create_client_file(location_choice: &str) -> std::io::Result<()> {
+    let content = "import { createAuthClient } from \"better-auth/react\";\n\
+                   // make sure to import from better-auth/react;\n\n\
+                   export const authClient = createAuthClient({\n\
+                   // you can pass client configuration here\n\
+                   });";
+    write_project_file(location_choice, "auth-client.ts", content)
 }

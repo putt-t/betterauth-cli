@@ -5,7 +5,9 @@ use std::fs;
 use std::process::Command;
 
 // imports
-use super::auth_file::{generate_auth_ts_content, write_auth_file};
+use super::auth_file::{
+    create_api_route, create_client_file, generate_auth_ts_content, write_auth_file,
+};
 use super::database::setup_database_config;
 use super::social::{setup_social_providers, write_env_vars};
 
@@ -34,7 +36,7 @@ fn print_info(message: &str) {
 }
 
 pub fn setup_nextjs_project(project_name: String, better_auth_secret: String) {
-    let total_steps = 5;
+    let total_steps = 6;
     let term = Term::stdout();
 
     // clear the terminal for a fresh start
@@ -190,8 +192,38 @@ pub fn setup_nextjs_project(project_name: String, better_auth_secret: String) {
         }
     }
 
+    // step 6: create authentication files
+    print_step_header(6, total_steps, "Creating authentication files");
+
     // write auth.ts file to the selected location
-    write_auth_file(&auth_ts_content, &create_better_auth_instance);
+    if let Err(e) = write_auth_file(&auth_ts_content, &create_better_auth_instance) {
+        println!(
+            "{} {}",
+            style("ERROR:").bold().red(),
+            style(format!("Failed to create auth.ts: {}", e)).red()
+        );
+        return;
+    }
+
+    // create api route
+    if let Err(e) = create_api_route(&create_better_auth_instance) {
+        println!(
+            "{} {}",
+            style("ERROR:").bold().red(),
+            style(format!("Failed to create API route: {}", e)).red()
+        );
+        return;
+    }
+
+    // create auth client
+    if let Err(e) = create_client_file(&create_better_auth_instance) {
+        println!(
+            "{} {}",
+            style("ERROR:").bold().red(),
+            style(format!("Failed to create auth-client.ts: {}", e)).red()
+        );
+        return;
+    }
 
     // final success message
     let _ = term.clear_line();
