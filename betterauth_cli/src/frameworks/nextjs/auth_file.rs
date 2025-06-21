@@ -65,11 +65,11 @@ pub fn write_auth_file(auth_ts_content: &str, location_choice: &str) {
         }
         // if the user wants to put it in the lib folder
         "lib/" => {
-            // first check if src exists
+            // check if src exists and determine the app path
             let target_dir = if Path::new("src").exists() {
-                "src/lib"
+                "src/app/lib"
             } else {
-                "lib"
+                "app/lib"
             };
             // create the directory if it doesn't exist
             fs::create_dir_all(target_dir).unwrap();
@@ -82,11 +82,11 @@ pub fn write_auth_file(auth_ts_content: &str, location_choice: &str) {
         }
         // if the user wants to put it in the utils folder
         "utils/" => {
-            // first check if src exists
+            // check if src exists and determine the app path
             let target_dir = if Path::new("src").exists() {
-                "src/utils"
+                "src/app/utils"
             } else {
-                "utils"
+                "app/utils"
             };
             // create the directory if it doesn't exist
             fs::create_dir_all(target_dir).unwrap();
