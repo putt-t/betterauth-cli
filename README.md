@@ -2,6 +2,8 @@
 
 A command-line interface tool that automatically generates and configures [BETTER-AUTH](https://www.better-auth.com/) projects based on your framework, database, and social sign-on preferences.
 
+yes i am making both the typescript and rust version at the same time.
+
 ## Disclaimer
 
 I just started re-learning Rust so this is all relatively new to me. Feel free to bash my code and give me feedback on how to optimize / improve. also might have some AI slop in there, sometimes be using tab in cursor to help me out as well.
