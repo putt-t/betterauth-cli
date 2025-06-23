@@ -3,7 +3,7 @@ name: Build macOS Binary
 on:
   push:
     branches:
-      - main # Triggers on every push to the main branch
+      - main
 
 env:
   CARGO_TERM_COLOR: always
@@ -29,43 +29,3 @@ jobs:
         with:
           name: betterauth-cli-macos
           path: betterauth_cli/target/release/betterauth_cli
-
-  release:
-    name: Create GitHub Release
-    needs: build-and-upload
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: List downloaded artifacts (for debugging)
-        run: ls -R artifacts
-
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/**/*
-          prerelease: true
-          name: Release ${{ github.ref_name }}
-          tag_name: ${{ github.ref }}
-          body: |
-            # Release ${{ github.ref_name }}
-
-            This is an automated release of the BetterAuth CLI.
-
-            ## Download
-            Download the appropriate executable for your OS below.
-
-            ## How to Use
-            1. Download the archive for your operating system.
-            2. Extract the archive.
-            3. Run the `betterauth_cli` (or `betterauth_cli.exe` on Windows) executable from your terminal.
-
-            ## Checksums (SHA256)
-            (Note: Checksums are not automatically generated in this basic example. You can add a step to generate them and include them here.) 
