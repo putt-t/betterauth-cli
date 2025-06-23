@@ -131,10 +131,17 @@ pub fn create_api_route(location_choice: &str) -> std::io::Result<()> {
 }
 
 pub fn create_client_file(location_choice: &str) -> std::io::Result<()> {
-    let content = "import { createAuthClient } from \"better-auth/react\";\n\
-                   // make sure to import from better-auth/react;\n\n\
+    let content = "import {\n\
+                   \tcreateAuthClient\n\
+                   } from \"better-auth/react\";\n\n\
                    export const authClient = createAuthClient({\n\
-                   // you can pass client configuration here\n\
-                   });";
+                   \tbaseURL: process.env.NEXT_PUBLIC_APP_URL,\n\
+                   })\n\n\
+                   export const {\n\
+                   \tsignIn,\n\
+                   \tsignOut,\n\
+                   \tsignUp,\n\
+                   \tuseSession\n\
+                   } = authClient;";
     write_project_file(location_choice, "auth-client.ts", content)
 }
