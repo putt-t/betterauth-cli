@@ -2,8 +2,8 @@ use console::style;
 use std::fs;
 use std::path::Path;
 
-use super::database::DatabaseConfig;
 use super::social::SocialProvidersConfig;
+use crate::common::database::DatabaseConfig;
 
 pub fn generate_auth_ts_content(
     database_config: &DatabaseConfig,
@@ -51,7 +51,7 @@ pub fn generate_auth_ts_content(
     )
 }
 
-fn write_project_file(
+pub fn write_project_file(
     location_choice: &str,
     file_name: &str,
     content: &str,
@@ -128,20 +128,4 @@ pub fn create_api_route(location_choice: &str) -> std::io::Result<()> {
     );
 
     Ok(())
-}
-
-pub fn create_client_file(location_choice: &str) -> std::io::Result<()> {
-    let content = "import {\n\
-                   \tcreateAuthClient\n\
-                   } from \"better-auth/react\";\n\n\
-                   export const authClient = createAuthClient({\n\
-                   \tbaseURL: process.env.NEXT_PUBLIC_APP_URL,\n\
-                   })\n\n\
-                   export const {\n\
-                   \tsignIn,\n\
-                   \tsignOut,\n\
-                   \tsignUp,\n\
-                   \tuseSession\n\
-                   } = authClient;";
-    write_project_file(location_choice, "auth-client.ts", content)
 }

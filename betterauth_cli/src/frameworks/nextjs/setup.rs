@@ -5,11 +5,10 @@ use std::fs;
 use std::process::Command;
 
 // imports
-use super::auth_file::{
-    create_api_route, create_client_file, generate_auth_ts_content, write_auth_file,
-};
-use super::database::setup_database_config;
+use super::auth_file::{create_api_route, generate_auth_ts_content, write_auth_file};
 use super::social::{setup_social_providers, write_env_vars};
+use crate::common::client::create_client_file;
+use crate::common::database::setup_database_config;
 
 fn print_step_header(step_number: usize, total_steps: usize, title: &str) {
     // clear line
@@ -216,7 +215,10 @@ pub fn setup_nextjs_project(project_name: String, better_auth_secret: String) {
     }
 
     // create auth client
-    if let Err(e) = create_client_file(&create_better_auth_instance) {
+    if let Err(e) = create_client_file(
+        &create_better_auth_instance,
+        "process.env.NEXT_PUBLIC_APP_URL",
+    ) {
         println!(
             "{} {}",
             style("ERROR:").bold().red(),

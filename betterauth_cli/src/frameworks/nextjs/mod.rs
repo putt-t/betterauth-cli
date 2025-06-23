@@ -1,5 +1,4 @@
 pub mod auth_file;
-pub mod database;
 pub mod setup;
 pub mod social;
 
