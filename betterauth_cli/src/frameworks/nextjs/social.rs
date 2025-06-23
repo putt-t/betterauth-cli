@@ -15,7 +15,7 @@ pub fn setup_social_providers() -> SocialProvidersConfig {
 
     // options for social providers
     let social_providers = vec![
-        "Google", "GitHub", "Discord", "Facebook", "Twitter", "Apple",
+        "Google", "GitHub", "Discord", "Facebook", "Twitter", "Apple", "HuggingFace", "Kick", "Microsoft", "Tiktok", "Twitch", "Twitter", "Dropbox", "Linkedin", "Gitlab", "Reddit", "Roblox", "Spotify", "Vk", "Zoom"
     ];
 
     // prompt for social providers
@@ -78,12 +78,32 @@ pub fn setup_social_providers() -> SocialProvidersConfig {
         ));
 
         // add provider to social_config
-        social_config.push_str(&format!(
-            "\t\t{}: {{ \n\t\t\tclientId: process.env.{}_CLIENT_ID as string,\n\t\t\tclientSecret: process.env.{}_CLIENT_SECRET as string,\n\t\t}},\n",
-            provider_lowercase,
-            provider.to_uppercase(),
-            provider.to_uppercase()
-        ));
+        if *provider == "Tiktok" {
+            social_config.push_str(&format!(
+                "\t\t{}: {{ \n\t\t\tclientId: process.env.{}_CLIENT_ID as string,\n\t\t\tclientSecret: process.env.{}_CLIENT_SECRET as string,\n\t\t\tclientKey: process.env.{}_CLIENT_KEY as string,\n\t\t}},\n",
+                provider_lowercase,
+                provider.to_uppercase(),    
+                provider.to_uppercase(),
+                provider.to_uppercase()
+            ));
+        } else if *provider == "Gitlab" {
+            social_config.push_str(&format!(
+                "\t\t{}: {{ \n\t\t\tclientId: process.env.{}_CLIENT_ID as string,\n\t\t\tclientSecret: process.env.{}_CLIENT_SECRET as string,\n\t\t\tissuer: process.env.{}_ISSUER as string,\n\t\t}},\n",
+                provider_lowercase,
+                provider.to_uppercase(),    
+                provider.to_uppercase(),
+                provider.to_uppercase()
+            ));
+        } else {
+            social_config.push_str(&format!(
+                "\t\t{}: {{ \n\t\t\tclientId: process.env.{}_CLIENT_ID as string,\n\t\t\tclientSecret: process.env.{}_CLIENT_SECRET as string,\n\t\t}},\n",
+                provider_lowercase,
+                provider.to_uppercase(),    
+                provider.to_uppercase()
+            ));
+        }
+
+
     }
 
     // push dat shiii
