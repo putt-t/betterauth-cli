@@ -27,21 +27,27 @@ pub fn generate_auth_ts_content(
 
     // add configurations
     if let Some(social_config) = &social_providers_config.config {
-        config_parts.push(social_config);
+        config_parts.push(social_config.as_str());
+    }
+
+    if social_providers_config
+        .providers
+        .iter()
+        .any(|p| p == "Apple")
+    {
+        config_parts.push("\ttrustedOrigins: [\"https://appleid.apple.com\"]");
     }
 
     // add database config if needed
     if let Some(db_config) = &database_config.config {
-        config_parts.push(db_config);
+        config_parts.push(db_config.as_str());
     }
 
     // make that auth.ts file brah
     let config = if config_parts.is_empty() {
         String::from("\t//...")
     } else {
-        // join the string references
-        let parts: Vec<&str> = config_parts.iter().map(|s| s.as_str()).collect();
-        parts.join(",\n")
+        config_parts.join(",\n")
     };
 
     // format the auth.ts file

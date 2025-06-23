@@ -7,6 +7,7 @@ use std::io::Write;
 pub struct SocialProvidersConfig {
     pub config: Option<String>,
     pub env_vars: String,
+    pub providers: Vec<String>,
 }
 
 pub fn setup_social_providers() -> SocialProvidersConfig {
@@ -49,6 +50,7 @@ pub fn setup_social_providers() -> SocialProvidersConfig {
         return SocialProvidersConfig {
             config: None,
             env_vars: String::new(),
+            providers: Vec::new(),
         };
     }
 
@@ -91,6 +93,7 @@ pub fn setup_social_providers() -> SocialProvidersConfig {
     SocialProvidersConfig {
         config: Some(social_config),
         env_vars: all_env_vars,
+        providers: selected_providers.iter().map(|s| s.to_string()).collect(),
     }
 }
 
