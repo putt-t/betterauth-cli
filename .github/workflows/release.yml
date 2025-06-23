@@ -1,0 +1,105 @@
+name: Release CI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive_ext: .tar.gz
+            command_prefix: ""
+            binary_name: betterauth_cli
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive_ext: .tar.gz
+            command_prefix: ""
+            binary_name: betterauth_cli
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive_ext: .zip
+            command_prefix: ""
+            binary_name: betterauth_cli.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build project
+        run: cargo build --release --target ${{ matrix.target }}
+        working-directory: ./betterauth_cli
+
+      - name: Create archive
+        shell: bash
+        run: |
+          mkdir -p staging
+          cp target/${{ matrix.target }}/release/${{ matrix.binary_name }} staging/
+          cd staging
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a ../betterauth_cli-${{ matrix.target }}${{ matrix.archive_ext }} ./*
+          else
+            tar -czvf ../betterauth_cli-${{ matrix.target }}${{ matrix.archive_ext }} ./*
+          fi
+        working-directory: ./betterauth_cli
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: betterauth_cli-${{ matrix.target }}
+          path: betterauth_cli/betterauth_cli-${{ matrix.target }}${{ matrix.archive_ext }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List downloaded artifacts (for debugging)
+        run: ls -R artifacts
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          prerelease: true
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          body: |
+            # Release ${{ github.ref_name }}
+
+            This is an automated release of the BetterAuth CLI.
+
+            ## Download
+            Download the appropriate executable for your OS below.
+
+            ## How to Use
+            1. Download the archive for your operating system.
+            2. Extract the archive.
+            3. Run the `betterauth_cli` (or `betterauth_cli.exe` on Windows) executable from your terminal.
+
+            ## Checksums (SHA256)
+            (Note: Checksums are not automatically generated in this basic example. You can add a step to generate them and include them here.) 
