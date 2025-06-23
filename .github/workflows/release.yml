@@ -1,36 +1,17 @@
-name: Release CI
+name: Build macOS Binary
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main # Triggers on every push to the main branch
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Build for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        include:
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            archive_ext: .tar.gz
-            command_prefix: ""
-            binary_name: betterauth_cli
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            archive_ext: .tar.gz
-            command_prefix: ""
-            binary_name: betterauth_cli
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            archive_ext: .zip
-            command_prefix: ""
-            binary_name: betterauth_cli.exe
+  build-and-upload:
+    name: Build for macOS
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code
@@ -38,35 +19,20 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          target: ${{ matrix.target }}
 
       - name: Build project
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release
         working-directory: ./betterauth_cli
-
-      - name: Create archive
-        shell: bash
-        run: |
-          mkdir -p staging
-          cp target/${{ matrix.target }}/release/${{ matrix.binary_name }} staging/
-          cd staging
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a ../betterauth_cli-${{ matrix.target }}${{ matrix.archive_ext }} ./*
-          else
-            tar -czvf ../betterauth_cli-${{ matrix.target }}${{ matrix.archive_ext }} ./*
-          fi
-        working-directory: ./betterauth_cli
-
-      - name: Upload artifact
+      
+      - name: Upload macOS binary as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: betterauth_cli-${{ matrix.target }}
-          path: betterauth_cli/betterauth_cli-${{ matrix.target }}${{ matrix.archive_ext }}
+          name: betterauth-cli-macos
+          path: betterauth_cli/target/release/betterauth_cli
 
   release:
     name: Create GitHub Release
-    needs: build
+    needs: build-and-upload
     runs-on: ubuntu-latest
     permissions:
       contents: write
